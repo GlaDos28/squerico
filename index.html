@@ -11,16 +11,20 @@
     
     <script type="text/javascript">
 	
-	var DELAY_TURN_TIME = 10;
-	var DELAY_DRAW_TIME = 2;
-	var SQUARE_START_X = 50;
-	var SQUARE_START_Y = 50;
-	var SQUARE_END_X = SQUARE_START_X + a.m * SQUARE_SIZE;
-	var SQUARE_END_Y = SQUARE_START_Y + a.n * SQUARE_SIZE;
-	var SQUARE_SIZE = 48
+	const DELAY_TURN_TIME = 10;
+	const DELAY_DRAW_TIME = 2;
+	const FIELD = { squareSize: 48,
+	                squareOffset: { x: 16.25, y: 12.4 },
+	                start: { x: 20,
+				 y: 50 },
+			end: { x: 50 + a.m * 64,
+			       y: 50 + a.n * 60 } };
+	const BACKGROUND_COLOR = 0x1099bb;
+	const BADGE = { size: 75, pos: [ { x: 1175, y: 75 }, { x: 1175, y: 175 }, { x: 1175, y: 275 } ] };
 	
 	//**********************************************
-        var renderer = PIXI.autoDetectRenderer(850, 850,{backgroundColor : 0x1099bb});
+	
+        var renderer = PIXI.autoDetectRenderer(1300, 1150, { backgroundColor: BACKGROUND_COLOR });
         document.body.appendChild(renderer.view);
         
         var stage = new PIXI.Container();
@@ -28,25 +32,57 @@
         
         //**********************************************
         
-        var texture = PIXI.Texture.fromImage('idp.jpg');
-        var logo = new PIXI.Sprite(texture);
+        var logo = new PIXI.Sprite(PIXI.Texture.fromImage('assets/idp.jpg'));
         
-        logo.anchor.x = 0.5;
-        logo.anchor.y = 0.5;
+        logo.anchor.x = 0.8;
+        logo.anchor.y = 0.8;
         
-        logo.position.x = 400;
-        logo.position.y = 300;
+        logo.scale.set(0.285);
+        
+        logo.position.x = 1256;
+        logo.position.y = 1076;
         
         //**********************************************
         
-        var basicText = new PIXI.Text("Pause");
-        var graphics = new PIXI.Graphics();
+        const square = [ { texture: PIXI.Texture.fromImage('' /* assets/block-empty.png */) },
+                         { texture: PIXI.Texture.fromImage('assets/block-none.png')  },
+                         { texture: PIXI.Texture.fromImage('assets/block-copy.png')  } ];
         
+        //**********************************************
+        
+        var field = new Array(a.m);
+        
+        for (var i = 0; i < a.m; i++) {
+		field[i] = new Array(a.n);
+		
+		for (var j = 0; j < a.n; j++) {
+			field[i][j] = new PIXI.Sprite(PIXI.Texture.fromImage('assets/block-empty.png'));
+			field[i][j].position.x = FIELD.start.x + 50 + (FIELD.squareSize + FIELD.squareOffset.x) * j;
+			field[i][j].position.y = FIELD.start.y + 50 + (FIELD.squareSize + FIELD.squareOffset.y) * i;
+		}
+        }
+        
+        //**********************************************
+        
+        var graphics = new PIXI.Graphics();
         var timerTurn = 0;
         var timerDraw = 0;
         var pause = false;
+        var paintBlock = 0;
         
-	basicText.x = 425;
+        //**
+        
+        var interactRect = new PIXI.Graphics();
+        interactRect.lineStyle(0, 0x000000, 1);
+	interactRect.beginFill(BACKGROUND_COLOR, 1);
+	interactRect.drawRect(FIELD.start.x, FIELD.start.y, FIELD.end.x - FIELD.start.x, FIELD.end.y - FIELD.start.y);
+	interactRect.endFill();
+        
+        //**
+        
+        var basicText = new PIXI.Text("Pause");
+        
+	basicText.x = (FIELD.start.x + FIELD.end.x) / 2;;
 	basicText.y = 10;
 	
 	basicText.interactive = true;
@@ -56,11 +92,52 @@
 	
 	//**********************************************
 	
+	var background = { fieldBG: new PIXI.Sprite(PIXI.Texture.fromImage('assets/game-field.png')),
+	                   g: new PIXI.Graphics(),
+	                   badge: new Array(square.length) };
+	
+	background.fieldBG.position.x = FIELD.start.x;
+	background.fieldBG.position.y = FIELD.start.y;
+	
+	background.g.lineStyle(4, 0x0000DF, 1);
+	background.g.beginFill(BACKGROUND_COLOR, 1);
+	background.g.drawRect(1145, 50, 140, 1055);
+	background.g.endFill();
+	
+	for (var i = 0; i < square.length; i++) {
+		background.badge[i] = new PIXI.Sprite(square[i].texture);
+		background.badge[i].anchor.x = -0.1;
+		background.badge[i].anchor.y = -0.1;
+		background.badge[i].position.x = BADGE.pos[i].x;
+		background.badge[i].position.y = BADGE.pos[i].y;
+	}
+	
+	//**********************************************
+	
+	stage.addChild(interactRect);
+	stage.addChild(background.fieldBG);
+	stage.addChild(background.g);
 	stage.addChild(basicText);
 	stage.addChild(logo);
 	
+	for (var i = 0; i < a.m; i++)
+		for (var j = 0; j < a.n; j++)
+			stage.addChild(field[i][j]);
+	
+	for (var i = 0; i < square.length; i++)
+		stage.addChild(background.badge[i]);
+	
 	stage.on('click', onClick);
 	stage.on('tap', onClick);
+	
+	//**********************************************
+	
+	function inRect(p, rectP, w, h) {
+		return p.x >= rectP.x     &&
+		       p.y >= rectP.y     &&
+		       p.x <= rectP.x + w &&
+		       p.y <= rectP.y + h;
+	}
 	
 	//**********************************************
 	
@@ -70,22 +147,29 @@
 	
 	function onClick(event) {
 		var p = event.data.getLocalPosition(this)
-		if (	p.x < SQUARE_START_X ||
-			p.y < SQUARE_START_Y ||
-			p.x > SQUARE_END_X ||
-			p.y > SQUARE_END_Y) 
+		
+		for (var i = 0; i < BADGE.pos.length; i++)
+			if (inRect(p, BADGE.pos[i], BADGE.size, BADGE.size)) {
+				paintBlock = i;
+				break;
+			}
+		
+		if (	p.x < FIELD.start.x ||
+			p.y < FIELD.start.y ||
+			p.x > FIELD.end.x   ||
+			p.y > FIELD.end.y) 
 		    return;
 		
-		p.x -= SQUARE_START_X;
-		p.y -= SQUARE_START_Y;
+		p.x -= FIELD.start.x + 46;
+		p.y -= FIELD.start.y + 50;
 		
-		p.x /= SQUARE_SIZE;
-		p.y /= SQUARE_SIZE;
+		p.x /= FIELD.squareSize + FIELD.squareOffset.x;
+		p.y /= FIELD.squareSize + FIELD.squareOffset.y;
 		
 		var intX = Math.floor(p.x);
 		var intY = Math.floor(p.y);
 		
-		a.c[intY][intX] = 1 - a.c[intY][intX];
+		a.c[intY][intX] = paintBlock;
 	}
 	
 	//**********************************************
@@ -100,28 +184,14 @@
 		if (timerDraw >= DELAY_DRAW_TIME) {
 			timerDraw = 0;
 			
-			graphics = new PIXI.Graphics();
-			var curSquareId = 0;
-			
-			graphics.lineStyle(2, 0x0000FF, 1);
-			graphics.beginFill(0x000000, 1);
-			
 			for (var i = 0; i < a.m; i++)
-				for (var j = 0; j < a.n; j++) {
-					if (a.c[i][j] != curSquareId) {
-						curSquareId = a.c[i][j];
-						if (curSquareId == 0)
-							graphics.beginFill(0x000000, 1);
-						else
-							graphics.beginFill(0xFF700B, 1);
-					}
-					
-					graphics.drawRect(SQUARE_START_X + SQUARE_SIZE * j,
-					                  SQUARE_START_Y + SQUARE_SIZE * i,
-					                  SQUARE_SIZE,
-					                  SQUARE_SIZE);
-				}
+				for (var j = 0; j < a.n; j++)
+					field[i][j].texture = square[a.c[i][j]].texture;
 			
+			graphics = new PIXI.Graphics();
+			graphics.lineStyle(2, 0x00FF00, 1);
+			graphics.beginFill(0x000000, 0);
+			graphics.drawRect(BADGE.pos[paintBlock].x, BADGE.pos[paintBlock].y, BADGE.size, BADGE.size);
 			graphics.endFill();
 		}
 		
