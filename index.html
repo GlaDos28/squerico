@@ -154,10 +154,10 @@
 				break;
 			}
 		
-		if (	p.x < FIELD.start.x ||
-			p.y < FIELD.start.y ||
-			p.x > FIELD.end.x   ||
-			p.y > FIELD.end.y) 
+		if (	p.x < FIELD.start.x - 46 ||
+			p.y < FIELD.start.y - 50 ||
+			p.x > FIELD.end.x + 46   ||
+			p.y > FIELD.end.y + 50) 
 		    return;
 		
 		p.x -= FIELD.start.x + 46;
