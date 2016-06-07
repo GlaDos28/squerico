@@ -1,161 +1,135 @@
-const STATE_NUM = 3;
-const LIVE_NUM = 2;
+const STATE_NUM = 4;
+	const STATE_EMPTY = 0;
+	const STATE_WALL  = 1;
+	const STATE_COPY  = 2;
+	const STATE_MOVE  = 3;
 
 //**
 
-var TRANSITION_TABLE = new Array(STATE_NUM);
-var sum = 0;
-
-for (var i1 = 0; i1 < STATE_NUM; i1++) {
-	TRANSITION_TABLE[i1] = new Array(STATE_NUM);
+var TRANSITION_LIVE = function(c, x, y) {
+	var sum = 0;
 	
-	for (var i2 = 0; i2 < STATE_NUM; i2++) {
-		TRANSITION_TABLE[i1][i2] = new Array(STATE_NUM);
-		
-		for (var i3 = 0; i3 < STATE_NUM; i3++) {
-			TRANSITION_TABLE[i1][i2][i3] = new Array(STATE_NUM);
-			
-			for (var i4 = 0; i4 < STATE_NUM; i4++) {
-				TRANSITION_TABLE[i1][i2][i3][i4] = new Array(STATE_NUM);
-				
-				for (var i5 = 0; i5 < STATE_NUM; i5++) {
-					TRANSITION_TABLE[i1][i2][i3][i4][i5] = new Array(STATE_NUM);
-					
-					for (var i6 = 0; i6 < STATE_NUM; i6++) {
-						TRANSITION_TABLE[i1][i2][i3][i4][i5][i6] = new Array(STATE_NUM);
-						
-						for (var i7 = 0; i7 < STATE_NUM; i7++) {
-							TRANSITION_TABLE[i1][i2][i3][i4][i5][i6][i7] = new Array(STATE_NUM);
-							
-							for (var i8 = 0; i8 < STATE_NUM; i8++) {
-								TRANSITION_TABLE[i1][i2][i3][i4][i5][i6][i7][i8] = new Array(STATE_NUM);
-								
-								for (var i9 = 0; i9 < STATE_NUM; i9++) {
-									sum = 0;
-									
-									if (i2 == LIVE_NUM)
-										sum++;
-									if (i3 == LIVE_NUM)
-										sum++;
-									if (i4 == LIVE_NUM)
-										sum++;
-									if (i5 == LIVE_NUM)
-										sum++;
-									if (i6 == LIVE_NUM)
-										sum++;
-									if (i7 == LIVE_NUM)
-										sum++;
-									if (i8 == LIVE_NUM)
-										sum++;
-									if (i9 == LIVE_NUM)
-										sum++;
-									
-									TRANSITION_TABLE[i1][i2][i3][i4][i5][i6][i7][i8][i9] = i1;
-									
-									if (i1 == 0 && sum == 3)
-										TRANSITION_TABLE[i1][i2][i3][i4][i5][i6][i7][i8][i9] = LIVE_NUM;
-									
-									if (i1 == LIVE_NUM && sum != 2 && sum != 3)
-										TRANSITION_TABLE[i1][i2][i3][i4][i5][i6][i7][i8][i9] = 0;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+	if (getC(c, x - 1, y) == STATE_COPY) sum++;
+	if (getC(c, x - 1, y + 1) == STATE_COPY) sum++;
+	if (getC(c, x - 1, y - 1) == STATE_COPY) sum++;
+	if (getC(c, x, y - 1) == STATE_COPY) sum++;
+	if (getC(c, x, y + 1) == STATE_COPY) sum++;
+	if (getC(c, x + 1, y - 1) == STATE_COPY) sum++;
+	if (getC(c, x + 1, y) == STATE_COPY) sum++;
+	if (getC(c, x + 1, y + 1) == STATE_COPY) sum++;
+	
+	if (getC(c, x, y) == STATE_EMPTY && sum == 3)
+		return STATE_COPY;
+	
+	if (getC(c, x, y) == STATE_COPY && sum != 2 && sum != 3)
+		return STATE_EMPTY;
+	
+	return getC(c, x, y);
 }
 
-const VON_NEUMANN_NEIGHBORHOOD_D1 = [ {x: 0,  y: 0  },
-                                      {x: 0,  y: 1  },
-                                      {x: 0,  y: -1 },
-                                      {x: 1,  y: 0  },
-                                      {x: -1, y: 0  },
-				      {x: 1,  y: 1  },
-				      {x: 1,  y: -1 },
-				      {x: -1, y: 1  },
-				      {x: -1, y: -1 } ];
+var TRANSITION = function(c, x, y) {
+	if (getC(c, x, y) == STATE_WALL)
+		return STATE_WALL;
+	
+	if (getC(c, x, y) == STATE_EMPTY) {
+		if (getC(c, x - 1, y - 1) == STATE_COPY) {
+			var copyBlock = getC(c, x - 2, y - 1);
+			
+			if (copyBlock != STATE_EMPTY && copyBlock != STATE_WALL)
+				return copyBlock;
+		}
+		
+		if (getC(c, x - 1, y + 1) == STATE_COPY) {
+			var copyBlock = getC(c, x - 2, y + 1);
+			
+			if (copyBlock != STATE_EMPTY && copyBlock != STATE_WALL)
+				return copyBlock;
+		}
+	}
+	
+	if (getC(c, x + 1, y) == STATE_COPY)
+		return STATE_EMPTY;
+	
+	return getC(c, x, y);
+};
+
+//*************************************
+
+const START_FIELD = [ [ [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ],
+		
+	              [ [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 2, 2, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1 ],
+      	                [ 1, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1 ],
+	                [ 1, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 1 ],
+      	                [ 1, 0, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 2, 0, 0, 1 ],
+	                [ 1, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 1 ],
+	                [ 1, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1 ],
+	                [ 1, 0, 0, 2, 0, 0, 0, 0, 2, 0, 2, 2, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ],
+		  
+		      [ [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+      	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1 ],
+	                [ 1, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1 ],
+            	        [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1 ],
+	                [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	                [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ] ];
+
+//*************************************
 
 function turnAutomaton(a) {
-  var cTmp = new Array(a.m);
-  
-  for (var i = 0; i < a.m; i++) {
-    cTmp[i] = new Array(a.n);
-  }
-  
-  for (var i = 0; i < a.m; i++) {
-    for (var j = 0; j < a.n; j++) {
-      cTmp[i][j] = getTransition(a, i, j);
-    }
-  }
-  
-  a.c = cTmp;
-}
-
-function getTransition(a, x, y) {
-  return a.transitionTable[ getC(a, x + VON_NEUMANN_NEIGHBORHOOD_D1[0].x, y + VON_NEUMANN_NEIGHBORHOOD_D1[0].y) ]
-                          [ getC(a, x + VON_NEUMANN_NEIGHBORHOOD_D1[1].x, y + VON_NEUMANN_NEIGHBORHOOD_D1[1].y) ]
-                          [ getC(a, x + VON_NEUMANN_NEIGHBORHOOD_D1[2].x, y + VON_NEUMANN_NEIGHBORHOOD_D1[2].y) ]
-                          [ getC(a, x + VON_NEUMANN_NEIGHBORHOOD_D1[3].x, y + VON_NEUMANN_NEIGHBORHOOD_D1[3].y) ]
-                          [ getC(a, x + VON_NEUMANN_NEIGHBORHOOD_D1[4].x, y + VON_NEUMANN_NEIGHBORHOOD_D1[4].y) ]
-                          [ getC(a, x + VON_NEUMANN_NEIGHBORHOOD_D1[5].x, y + VON_NEUMANN_NEIGHBORHOOD_D1[5].y) ]
-                          [ getC(a, x + VON_NEUMANN_NEIGHBORHOOD_D1[6].x, y + VON_NEUMANN_NEIGHBORHOOD_D1[6].y) ]
-                          [ getC(a, x + VON_NEUMANN_NEIGHBORHOOD_D1[7].x, y + VON_NEUMANN_NEIGHBORHOOD_D1[7].y) ]
-                          [ getC(a, x + VON_NEUMANN_NEIGHBORHOOD_D1[8].x, y + VON_NEUMANN_NEIGHBORHOOD_D1[8].y) ];
-}
-
-function getC(a, x, y) {
-  if (x < 0 || x >= a.m || y < 0 || y >= a.n) {
-    return 0;
-  } else {
-    return a.c[x][y];
-  }
-}
-
-function automatonStr(a) {
-	var s = ""
-	for (var i = 0; i < a.m; i++) {
-		for (var j = 0; j < a.n; j++) {
-			s += a.c[i][j] + " "
-		}
-		
-		s += "\n"
-	}
+	var cTmp = new Array(a.m);
 	
-	return s
+	for (var i = 0; i < a.m; i++)
+		cTmp[i] = new Array(a.n);
+	
+	for (var i = 0; i < a.m; i++)
+		for (var j = 0; j < a.n; j++)
+			cTmp[j][i] = a.t(a.c, i, j);
+	
+	a.c = cTmp;
 }
 
-/*function getI(x,  bound) {
-  var res = x % bound;
-  
-  if (res < 0) {
-    return res + bound;
-  } else {
-    return res;
-  }
-}*/
+function getC(c, x, y) {
+	if (x < 0 || x >= a.m || y < 0 || y >= a.n)
+		return STATE_EMPTY;
+	else
+		return c[y][x];
+}
 
 var a = { m: 16,
           n: 16,
-          c: [ [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
-	       [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
-	       [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
-	       [ 1, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 1 ],
-	       [ 1, 0, 0, 2, 2, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1 ],
-	       [ 1, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1 ],
-	       [ 1, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1 ],
-	       [ 1, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 1 ],
-	       [ 1, 0, 2, 0, 0, 2, 0, 0, 0, 2, 0, 0, 2, 0, 0, 1 ],
-	       [ 1, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 1 ],
-	       [ 1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0, 1 ],
-	       [ 1, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1 ],
-	       [ 1, 0, 0, 2, 0, 0, 0, 0, 2, 0, 2, 2, 0, 0, 0, 1 ],
-	       [ 1, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 1 ],
-	       [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
-	       [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ],
-          transitionTable: TRANSITION_TABLE };
-
-//turnAutomaton(a);
-//javascript:alert(TRANSITION_TABLE);
+          c: START_FIELD[2],
+          t: TRANSITION };
 

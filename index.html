@@ -11,7 +11,7 @@
     
     <script type="text/javascript">
 	
-	const DELAY_TURN_TIME = 10;
+	const DELAY_TURN_TIME = 6;
 	const DELAY_DRAW_TIME = 2;
 	const FIELD = { squareSize: 48,
 	                squareOffset: { x: 16.25, y: 12.4 },
@@ -20,7 +20,10 @@
 			end: { x: 50 + a.m * 64,
 			       y: 50 + a.n * 60 } };
 	const BACKGROUND_COLOR = 0x1099bb;
-	const BADGE = { size: 75, pos: [ { x: 1175, y: 75 }, { x: 1175, y: 175 }, { x: 1175, y: 275 } ] };
+	const BADGE = { size: 75, pos: [ { x: 1175, y: 75 },
+	                                 { x: 1175, y: 175 },
+	                                 { x: 1175, y: 275 }, 
+	                                 { x: 1175, y: 375 } ] };
 	
 	//**********************************************
 	
@@ -44,9 +47,14 @@
         
         //**********************************************
         
-        const square = [ { texture: PIXI.Texture.fromImage('' /* assets/block-empty.png */) },
-                         { texture: PIXI.Texture.fromImage('assets/block-none.png')  },
-                         { texture: PIXI.Texture.fromImage('assets/block-copy.png')  } ];
+        const square = [ { texture:      PIXI.Texture.fromImage(''),
+                           badgeTexture: PIXI.Texture.fromImage('assets/block-empty.png') },
+                         { texture:      PIXI.Texture.fromImage('assets/block-none.png'),
+                           badgeTexture: PIXI.Texture.fromImage('assets/block-none.png') },
+                         { texture:      PIXI.Texture.fromImage('assets/block-copy.png'),
+                           badgeTexture: PIXI.Texture.fromImage('assets/block-copy.png') },
+                         { texture:      PIXI.Texture.fromImage('assets/block-move.png'),
+                           badgeTexture: PIXI.Texture.fromImage('assets/block-move.png') } ];
         
         //**********************************************
         
@@ -93,8 +101,8 @@
 	//**********************************************
 	
 	var background = { fieldBG: new PIXI.Sprite(PIXI.Texture.fromImage('assets/game-field.png')),
-	                   g: new PIXI.Graphics(),
-	                   badge: new Array(square.length) };
+	                   g:       new PIXI.Graphics(),
+	                   badge:   new Array(square.length) };
 	
 	background.fieldBG.position.x = FIELD.start.x;
 	background.fieldBG.position.y = FIELD.start.y;
@@ -105,7 +113,7 @@
 	background.g.endFill();
 	
 	for (var i = 0; i < square.length; i++) {
-		background.badge[i] = new PIXI.Sprite(square[i].texture);
+		background.badge[i] = new PIXI.Sprite(square[i].badgeTexture);
 		background.badge[i].anchor.x = -0.1;
 		background.badge[i].anchor.y = -0.1;
 		background.badge[i].position.x = BADGE.pos[i].x;
