@@ -89,6 +89,7 @@ createSquare(MOVE, 'assets/block-move.png', 'assets/block-move.png', function(_i
 	}
 });
 
+
 /////////////////////////////////////////////////////////
 // TODO paste your squares (the same way as above) here//
 /////////////////////////////////////////////////////////
@@ -213,10 +214,7 @@ function turnSession(session) {
 			end: { x: 50 + session.f.w * 64,
 			       y: 50 + session.f.h * 60 } };
 	const BACKGROUND_COLOR = 0x1099bb;
-	const BADGE = { size: 75, pos: [ { x: 1175, y: 75 },
-	                                 { x: 1175, y: 175 },
-	                                 { x: 1175, y: 275 }, 
-	                                 { x: 1175, y: 375 } ] };
+	const BADGE = { size: 75, pos: { x: 1175, y: 75 } };
 	
 	//**********************************************
 	
@@ -298,8 +296,8 @@ function turnSession(session) {
 		background.badge[i] = new PIXI.Sprite(session.s[i].badgeTexture);
 		background.badge[i].anchor.x = -0.1;
 		background.badge[i].anchor.y = -0.1;
-		background.badge[i].position.x = BADGE.pos[i].x;
-		background.badge[i].position.y = BADGE.pos[i].y;
+		background.badge[i].position.x = BADGE.pos.x;
+		background.badge[i].position.y = BADGE.pos.y + i * 100;
 	}
 	
 	//**********************************************
@@ -336,10 +334,10 @@ function turnSession(session) {
 	}
 	
 	function onClick(event) {
-		var p = event.data.getLocalPosition(this)
+		var p = event.data.getLocalPosition(this);
 		
-		for (var i = 0; i < BADGE.pos.length; i++)
-			if (inRect(p, BADGE.pos[i], BADGE.size, BADGE.size)) {
+		for (var i = 0; i < session.s.length; i++)
+			if (inRect(p, { x: BADGE.pos.x, y: BADGE.pos.y + i * 100 }, BADGE.size, BADGE.size)) {
 				paintBlock = i;
 				break;
 			}
@@ -381,7 +379,7 @@ function turnSession(session) {
 			graphics = new PIXI.Graphics();
 			graphics.lineStyle(2, 0x00FF00, 1);
 			graphics.beginFill(0x000000, 0);
-			graphics.drawRect(BADGE.pos[paintBlock].x, BADGE.pos[paintBlock].y, BADGE.size, BADGE.size);
+			graphics.drawRect(BADGE.pos.x, BADGE.pos.y + paintBlock * 100, BADGE.size, BADGE.size);
 			graphics.endFill();
 		}
 		
