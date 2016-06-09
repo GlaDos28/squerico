@@ -202,7 +202,7 @@ function turnSession(session) {
 	const DELAY_DRAW_TIME =
 		2;
 	const GLOBAL_SCALE =
-		0.7;
+		1.5;
 	const SCALES = {
 		field: 1 * GLOBAL_SCALE,
 		panel: 1 * GLOBAL_SCALE };
@@ -221,7 +221,10 @@ function turnSession(session) {
 			y: 50 * SCALES.field },
 		end: {
 			x: (50.3 + session.f.w * 64) * SCALES.field,
-			y: (51 + session.f.h * 60) * SCALES.field } };
+			y: (51 + session.f.h * 60) * SCALES.field },
+		clickOffset: {
+			x: 42 * SCALES.field,
+			y: 45 * SCALES.field } };
 	const BACKGROUND_COLOR =
 		0x1099bb;
 	const PANEL = {
@@ -383,14 +386,14 @@ function turnSession(session) {
 				break;
 			}
 		
-		if (	p.x < FIELD.start.x - 46 ||
-			p.y < FIELD.start.y - 50 ||
-			p.x > FIELD.end.x + 46   ||
-			p.y > FIELD.end.y + 50      ) 
+		if (	p.x < FIELD.start.x - FIELD.clickOffset.x ||
+			p.y < FIELD.start.y - FIELD.clickOffset.y ||
+			p.x > FIELD.end.x + FIELD.clickOffset.x   ||
+			p.y > FIELD.end.y + FIELD.clickOffset.y) 
 		    return;
 		
-		p.x -= FIELD.start.x + 46;
-		p.y -= FIELD.start.y + 50;
+		p.x -= FIELD.start.x + FIELD.clickOffset.x;
+		p.y -= FIELD.start.y + FIELD.clickOffset.y;
 		
 		p.x /= FIELD.squareSize + FIELD.squareOffset.x;
 		p.y /= FIELD.squareSize + FIELD.squareOffset.y;
