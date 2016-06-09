@@ -220,8 +220,8 @@ function turnSession(session) {
 	        	x: 20 * SCALES.field,
 			y: 50 * SCALES.field },
 		end: {
-			x: (50.3 + session.f.w * 64) * SCALES.field,
-			y: (51 + session.f.h * 60) * SCALES.field },
+			x: (20 + 50.3 + session.f.w * (48 + 16.27)) * SCALES.field,
+			y: (50 + 51 + session.f.h * (48 + 12.4)) * SCALES.field },
 		clickOffset: {
 			x: 42 * SCALES.field,
 			y: 45 * SCALES.field } };
@@ -257,7 +257,7 @@ function turnSession(session) {
 	const PAUSE = {
 		scale: SCALES.field,
 		position: {
-			x: (FIELD.start.x + FIELD.end.x) / 2 * SCALES.field,
+			x: (FIELD.start.x + FIELD.end.x) / 2,
 			y: 10 * SCALES.field },
 		text: "Pause" };
 	const WINDOW = {
