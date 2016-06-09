@@ -9,11 +9,11 @@
     
     <script type="text/javascript">
 
-	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
 
 const SQUARE_TYPE_NUMBER = 3;
 const SQUARE = new Array(SQUARE_TYPE_NUMBER);
@@ -89,21 +89,16 @@ createSquare(MOVE, 'assets/block-move.png', 'assets/block-move.png', function(_i
 	}
 });
 
+//////////////////////////////////////////////////////////
+// TODO paste your squares (the same way as above) here //
+//////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////
-// TODO paste your squares (the same way as above) here//
-/////////////////////////////////////////////////////////
-    	
-    	
-    	
-    	
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	
-    	
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+
 function emptyField(w, h, emptyType, wallType) {
 	var c = new Array(w);
 	
@@ -173,14 +168,12 @@ const FIELDS = [
 	        [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ]
 	])
 ];
-    	
-    	
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	
+
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
 
 function createSession(field, square) {
 	return { f: field, s: square };
@@ -195,30 +188,83 @@ function turnSession(session) {
 	
 	session.f = newF;
 }
-    	
-    	
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	//****************************************************************
-    	
+
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+//***************************************************************************
+
 	var session = createSession(FIELDS[0], SQUARE);
 	
-	const DELAY_TURN_TIME = 6;
-	const DELAY_DRAW_TIME = 2;
-	const FIELD = { squareSize: 48,
-	                squareOffset: { x: 16.25, y: 12.4 },
-	                start: { x: 20,
-				 y: 50 },
-			end: { x: 50 + session.f.w * 64,
-			       y: 50 + session.f.h * 60 } };
-	const BACKGROUND_COLOR = 0x1099bb;
-	const BADGE = { size: 75, pos: { x: 1175, y: 75 } };
+	const DELAY_TURN_TIME =
+		6;
+	const DELAY_DRAW_TIME =
+		2;
+	const GLOBAL_SCALE =
+		1;
+	const SCALES = {
+		field: 1 * GLOBAL_SCALE,
+		panel: 1 * GLOBAL_SCALE };
+	const FIELD = {
+		scale: SCALES.field,
+		texture: PIXI.Texture.fromImage('assets/game-field.png'),
+	        squareSize: 48 * SCALES.field,
+	        squareOffset: {
+	        	x: 16.27 * SCALES.field,
+	                y: 12.4 * SCALES.field },
+	        squareStartOffset: {
+	        	x: 50.3 * SCALES.field,
+	                y: 51 * SCALES.field },
+	        start: {
+	        	x: 20 * SCALES.field,
+			y: 50 * SCALES.field },
+		end: {
+			x: (50.3 + session.f.w * 64) * SCALES.field,
+			y: (51 + session.f.h * 60) * SCALES.field } };
+	const BACKGROUND_COLOR =
+		0x1099bb;
+	const PANEL = {
+		bound: {
+			x: 1145 * SCALES.panel,
+	                y: 50 * SCALES.panel,
+	                w: 140 * SCALES.panel,
+	                h: 1055 * SCALES.panel,
+	                lineW: 4 * SCALES.panel } };
+	const BADGE = {
+		size: 75 * SCALES.panel,
+	        iconScale: 1 * SCALES.panel,
+	        pos: {
+	        	x: PANEL.bound.x + 46 * SCALES.panel,
+	                y: PANEL.bound.y + 25 * SCALES.panel },
+	        iconOffset: 100 * SCALES.panel,
+	        selectBoundOffset: {
+	        	x: -14 * SCALES.panel,
+	                y: -14 * SCALES.panel },
+	        startSelection: 2 };
+	const LOGO = {
+		texture: PIXI.Texture.fromImage('assets/idp.jpg'),
+	        anchor: {
+	        	x: 0.8,
+	                y: 0.8 },
+	        scale: 0.285 * SCALES.panel,
+	        position: {
+	        	x: PANEL.bound.x + 111 * SCALES.panel,
+			y: PANEL.bound.y + PANEL.bound.h - 29 * SCALES.panel } };
+	const PAUSE = {
+		scale: SCALES.field,
+		position: {
+			x: (FIELD.start.x + FIELD.end.x) / 2 * SCALES.field,
+			y: 10 * SCALES.field },
+		text: "Pause" };
+	const WINDOW = {
+		size: {
+			w: 1300 * GLOBAL_SCALE,
+	                h: 1150 * GLOBAL_SCALE } };
 	
 	//**********************************************
 	
-        var renderer = PIXI.autoDetectRenderer(1300, 1150, { backgroundColor: BACKGROUND_COLOR });
+        var renderer = PIXI.autoDetectRenderer(WINDOW.size.w, WINDOW.size.h, { backgroundColor: BACKGROUND_COLOR });
         document.body.appendChild(renderer.view);
         
         var stage = new PIXI.Container();
@@ -226,15 +272,10 @@ function turnSession(session) {
         
         //**********************************************
         
-        var logo = new PIXI.Sprite(PIXI.Texture.fromImage('assets/idp.jpg'));
-        
-        logo.anchor.x = 0.8;
-        logo.anchor.y = 0.8;
-        
-        logo.scale.set(0.285);
-        
-        logo.position.x = 1256;
-        logo.position.y = 1076;
+        var logo = new PIXI.Sprite(LOGO.texture);
+        logo.anchor = LOGO.anchor;
+        logo.position = LOGO.position;
+        logo.scale.set(LOGO.scale);
         
         //**********************************************
         
@@ -244,9 +285,10 @@ function turnSession(session) {
 		field[i] = new Array(session.f.h);
 		
 		for (var j = 0; j < session.f.h; j++) {
-			field[i][j] = new PIXI.Sprite(PIXI.Texture.fromImage('assets/block-empty.png'));
-			field[i][j].position.x = FIELD.start.x + 50 + (FIELD.squareSize + FIELD.squareOffset.x) * i;
-			field[i][j].position.y = FIELD.start.y + 50 + (FIELD.squareSize + FIELD.squareOffset.y) * j;
+			field[i][j] = new PIXI.Sprite(PIXI.Texture.fromImage(''));
+			field[i][j].position.x = FIELD.start.x + FIELD.squareStartOffset.x + (FIELD.squareSize + FIELD.squareOffset.x) * i;
+			field[i][j].position.y = FIELD.start.y + FIELD.squareStartOffset.y + (FIELD.squareSize + FIELD.squareOffset.y) * j;
+			field[i][j].scale.set(FIELD.scale);
 		}
         }
         
@@ -256,7 +298,7 @@ function turnSession(session) {
         var timerTurn = 0;
         var timerDraw = 0;
         var pause = false;
-        var paintBlock = 0;
+        var paintBlock = BADGE.startSelection;
         
         //**
         
@@ -268,36 +310,35 @@ function turnSession(session) {
         
         //**
         
-        var basicText = new PIXI.Text("Pause");
-        
-	basicText.x = (FIELD.start.x + FIELD.end.x) / 2;;
-	basicText.y = 10;
-	
+        var basicText = new PIXI.Text(PAUSE.text);
+	basicText.x = PAUSE.position.x;
+	basicText.y = PAUSE.position.y;
+	basicText.scale.set(PAUSE.scale);
 	basicText.interactive = true;
-	
 	basicText.on('click', onPauseClick);
 	basicText.on('tap', onPauseClick);
 	
 	//**********************************************
 	
-	var background = { fieldBG: new PIXI.Sprite(PIXI.Texture.fromImage('assets/game-field.png')),
+	var background = { fieldBG: new PIXI.Sprite(FIELD.texture),
 	                   g:       new PIXI.Graphics(),
 	                   badge:   new Array(session.s.length) };
+	
+	background.fieldBG.scale.set(FIELD.scale);
 	
 	background.fieldBG.position.x = FIELD.start.x;
 	background.fieldBG.position.y = FIELD.start.y;
 	
-	background.g.lineStyle(4, 0x0000DF, 1);
+	background.g.lineStyle(PANEL.bound.lineW, 0x0000DF, 1);
 	background.g.beginFill(BACKGROUND_COLOR, 1);
-	background.g.drawRect(1145, 50, 140, 1055);
+	background.g.drawRect(PANEL.bound.x, PANEL.bound.y, PANEL.bound.w, PANEL.bound.h);
 	background.g.endFill();
 	
 	for (var i = 0; i < session.s.length; i++) {
 		background.badge[i] = new PIXI.Sprite(session.s[i].badgeTexture);
-		background.badge[i].anchor.x = -0.1;
-		background.badge[i].anchor.y = -0.1;
 		background.badge[i].position.x = BADGE.pos.x;
-		background.badge[i].position.y = BADGE.pos.y + i * 100;
+		background.badge[i].position.y = BADGE.pos.y + i * BADGE.iconOffset;
+		background.badge[i].scale.set(BADGE.iconScale);
 	}
 	
 	//**********************************************
@@ -337,7 +378,7 @@ function turnSession(session) {
 		var p = event.data.getLocalPosition(this);
 		
 		for (var i = 0; i < session.s.length; i++)
-			if (inRect(p, { x: BADGE.pos.x, y: BADGE.pos.y + i * 100 }, BADGE.size, BADGE.size)) {
+			if (inRect(p, { x: BADGE.pos.x, y: BADGE.pos.y + i * BADGE.iconOffset }, BADGE.size, BADGE.size)) {
 				paintBlock = i;
 				break;
 			}
@@ -379,7 +420,10 @@ function turnSession(session) {
 			graphics = new PIXI.Graphics();
 			graphics.lineStyle(2, 0x00FF00, 1);
 			graphics.beginFill(0x000000, 0);
-			graphics.drawRect(BADGE.pos.x, BADGE.pos.y + paintBlock * 100, BADGE.size, BADGE.size);
+			graphics.drawRect(BADGE.pos.x + BADGE.selectBoundOffset.x,
+			                  BADGE.pos.y + BADGE.selectBoundOffset.y + paintBlock * BADGE.iconOffset,
+			                  BADGE.size,
+			                  BADGE.size);
 			graphics.endFill();
 		}
 		
